@@ -21,3 +21,5 @@ require __DIR__.'/auth.php';
 
 //rutas de transacciones
 require __DIR__.'/transacciones.php';
+//rutas de categorias
+require __DIR__.'/categorias.php';

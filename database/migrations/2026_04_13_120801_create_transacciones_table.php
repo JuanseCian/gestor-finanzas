@@ -26,11 +26,7 @@ class CreateTransaccionesTable extends Migration
                   ->constrained('categorias')
                   ->nullOnDelete();
 
-            $table->foreignId('cuenta_id')
-                  ->nullable()
-                  ->constrained('cuentas')
-                  ->nullOnDelete();
-
+          
             $table->date('fecha');
 
             $table->timestamps();

@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Transaccion;
 use App\Models\Categoria;
-use App\Models\Cuenta;
+use App\Models\Metodo;
 
 class TransaccionController extends Controller
 {
@@ -19,12 +19,17 @@ class TransaccionController extends Controller
         return view('backend.transacciones.index', compact('transacciones'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
-        $categorias = Categoria::where('usuario_id', auth()->id())->get();
-        $cuentas = Cuenta::where('usuario_id', auth()->id())->get();
+        $tipo = $request->tipo ?? 'gasto';
 
-        return view('backend.transacciones.create', compact('categorias', 'cuentas'));
+        $categorias = Categoria::where('usuario_id', auth()->id())
+            ->where('tipo', $tipo)
+            ->get();
+
+        $metodos = Metodo::all();
+
+        return view('backend.transacciones.create', compact('categorias', 'metodos', 'tipo'));
     }
 
     public function store(Request $request)
@@ -32,7 +37,9 @@ class TransaccionController extends Controller
         $request->validate([
             'tipo' => 'required|in:ingreso,gasto',
             'monto' => 'required|numeric|min:0',
-            'fecha' => 'required|date'
+            'fecha' => 'required|date',
+            'metodo_id' => 'required|exists:metodos,id',
+            'categoria_id' => 'required|exists:categorias,id'
         ]);
 
         Transaccion::create([
@@ -41,7 +48,8 @@ class TransaccionController extends Controller
             'monto' => $request->monto,
             'descripcion' => $request->descripcion,
             'categoria_id' => $request->categoria_id,
-            'cuenta_id' => $request->cuenta_id,
+            'metodo_id' => $request->metodo_id,
+            'origen' => $request->origen,
             'fecha' => $request->fecha
         ]);
 
@@ -53,16 +61,32 @@ class TransaccionController extends Controller
         $this->authorizeUser($transaccion);
 
         $categorias = Categoria::where('usuario_id', auth()->id())->get();
-        $cuentas = Cuenta::where('usuario_id', auth()->id())->get();
+        $metodos = Metodo::all();
 
-        return view('backend.transacciones.edit', compact('transaccion', 'categorias', 'cuentas'));
+        return view('backend.transacciones.edit', compact('transaccion', 'categorias', 'metodos'));
     }
 
     public function update(Request $request, Transaccion $transaccion)
     {
         $this->authorizeUser($transaccion);
 
-        $transaccion->update($request->all());
+        $request->validate([
+            'tipo' => 'required|in:ingreso,gasto',
+            'monto' => 'required|numeric|min:0',
+            'fecha' => 'required|date',
+            'metodo_id' => 'required|exists:metodos,id',
+            'categoria_id' => 'required|exists:categorias,id'
+        ]);
+
+        $transaccion->update([
+            'tipo' => $request->tipo,
+            'monto' => $request->monto,
+            'descripcion' => $request->descripcion,
+            'categoria_id' => $request->categoria_id,
+            'metodo_id' => $request->metodo_id,
+            'origen' => $request->origen,
+            'fecha' => $request->fecha
+        ]);
 
         return redirect()->route('transacciones.index')->with('success', 'Actualizada');
     }

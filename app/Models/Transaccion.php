@@ -14,7 +14,7 @@ class Transaccion extends Model
         'monto',
         'descripcion',
         'categoria_id',
-        'cuenta_id',
+        'metodo_id',
         'fecha'
     ];
 
@@ -22,9 +22,9 @@ class Transaccion extends Model
     {
         return $this->belongsTo(Categoria::class);
     }
-
-    public function cuenta()
+    
+    public function metodo()
     {
-        return $this->belongsTo(Cuenta::class);
+        return $this->belongsTo(Metodo::class);
     }
 }
